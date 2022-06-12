@@ -1,7 +1,6 @@
 /* Output from p2c, the Pascal-to-C translator */
 /* From input file "test3.pas" */
 
-
 /****************************************************************************/
 /* program : hidden lines                                                   */
 /* purpose : This does hidden lines on the three dimentional package.       */
@@ -14,28 +13,35 @@
 /* Subsequently, Dan Fields did the (real difficult debugging) of the math  */
 /* stuff. Therefore, this is a dual handing in of the project.              */
 
-
-
 #include "p2c.h"
 
+#define MAXSEGS 50
+#define MAX_VERTS 250
+#define MAX_LINES 350
+#define MAX_FACETS 150
+#define MAX_SIDES 6
 
-#define MAXSEGS         50
-#define MAX_VERTS       250
-#define MAX_LINES       350
-#define MAX_FACETS      150
-#define MAX_SIDES       6
+#define KLUDGE 0.00001
 
-#define KLUDGE          0.00001
-
-
-typedef enum {
-  X, Y, Z, W
+typedef enum
+{
+  X,
+  Y,
+  Z,
+  W
 } XYZW;
 typedef double POINT[4];
 typedef double MATRIX[4][4];
-enum {
-  LEFT, RIGHT, BOTTOM, TOP, FRONT, BACK
-};typedef long DIRECTION;
+enum
+{
+  LEFT,
+  RIGHT,
+  BOTTOM,
+  TOP,
+  FRONT,
+  BACK
+};
+typedef long DIRECTION;
 
 typedef POINT POINT_TYPE[MAX_VERTS];
 typedef double RM_TYPE[MAXSEGS][2];
@@ -44,7 +50,8 @@ typedef uchar LINV_TYPE[MAX_LINES][2];
 typedef uchar LINF_TYPE[MAX_FACETS][MAX_SIDES];
 typedef uchar INDEX_TYPE[MAX_FACETS];
 
-typedef struct OBJ_TYPE {
+typedef struct OBJ_TYPE
+{
   uchar NOV;
   POINT_TYPE POINTS;
   COORD_TYPE XP, YP;
@@ -55,7 +62,6 @@ typedef struct OBJ_TYPE {
   LINF_TYPE LINF;
 } OBJ_TYPE;
 
-
 Static FILE *NIB;
 Static POINT VRP, VPN, VUP, COP, P1, P2, VRPPRIME;
 Static double D, F, B, UMIN, VMIN, UMAX, VMAX, MINDIST;
@@ -65,37 +71,33 @@ Static double WX, WY, WL, WH, VH, VL;
 Static OBJ_TYPE OBJ;
 Static RM_TYPE RM;
 
-
 /********************************************************************/
 
-static double 
+static double
 stretch(double x1, double x2)
 {
   return (x1 + (x2 - x1) * 319 / 199);
 }
 
-
 /********************************************************************/
 
-static long 
+static long
 tox(double x)
 {
   return ((long)floor(VL * (x - WX) / WL + 0.5));
 }
 
-
 /********************************************************************/
 
-static long 
+static long
 toy(double y)
 {
   return ((long)floor(VH * (WY - y) / WH + VH + 0.5));
 }
 
-
 /********************************************************************/
 
-static void 
+static void
 window(double left, double right, double bottom, double top)
 {
   WX = left;
@@ -104,10 +106,9 @@ window(double left, double right, double bottom, double top)
   WH = top - bottom;
 }
 
-
 /********************************************************************/
 
-static void 
+static void
 viewport(double left, double right, double bottom, double top)
 {
   long X1, Y1, X2, Y2;
@@ -119,63 +120,58 @@ viewport(double left, double right, double bottom, double top)
   X2 = (long)floor(right * 319 + 0.5);
   Y2 = (long)floor((1 - bottom) * 199 + 0.5);
   /*  GRAPHWINDOW(X1, Y1, X2, Y2); */
-/* p2c: test3.pas, line 103:
- * Warning: Symbol 'GRAPHWINDOW' is not defined [221] */
+  /* p2c: test3.pas, line 103:
+   * Warning: Symbol 'GRAPHWINDOW' is not defined [221] */
 }
-
 
 /********************************************************************/
 
-static void 
+static void
 drawon()
 {
   COLOR = 3;
 }
 
-
 /********************************************************************/
 
-static void 
+static void
 drawoff()
 {
   COLOR = 0;
 }
 
-
 /********************************************************************/
 
-static void 
+static void
 initialize()
 {
   /* PURPOSE : INITIALIZES THE MATRIX AND COLORS */
   /*  GRAPHMODE(); */
-/* p2c: test3.pas, line 125:
- * Warning: Symbol 'GRAPHMODE' is not defined [221] */
+  /* p2c: test3.pas, line 125:
+   * Warning: Symbol 'GRAPHMODE' is not defined [221] */
   /*  PALETTE(1); */
-/* p2c: test3.pas, line 126:
- * Warning: Symbol 'PALETTE' is not defined [221] */
+  /* p2c: test3.pas, line 126:
+   * Warning: Symbol 'PALETTE' is not defined [221] */
   drawon();
   window(0.0, 319.0, 0.0, 199.0);
   viewport(0.0, 1.0, 0.0, 1.0);
 }
 
-
 /********************************************************************/
 
-static void 
+static void
 plotpoint(double x, double y)
 {
   /* PURPOSE : PLOTS A SINGLE POINT ONTO THE SCREEN */
   NOWX = tox(x);
   NOWY = toy(y);
   /*  PLOT(NOWX, NOWY, COLOR); */
-/* p2c: test3.pas, line 139: Warning: Symbol 'PLOT' is not defined [221] */
+  /* p2c: test3.pas, line 139: Warning: Symbol 'PLOT' is not defined [221] */
 }
-
 
 /********************************************************************/
 
-static void 
+static void
 moves(double x, double y)
 {
   /* PURPOSE : MOVES TO <X,Y> WITHOUT DRAWING */
@@ -183,10 +179,9 @@ moves(double x, double y)
   NOWY = toy(y);
 }
 
-
 /********************************************************************/
 
-static void 
+static void
 draws(double x, double y)
 {
   /* PURPOSE : DRAWS TO <X,Y> AND MAKES IT THE CURRENT POINT */
@@ -194,26 +189,24 @@ draws(double x, double y)
 
   temp = toy(y);
   /*  DRAW(NOWX, NOWY, tox(X_), TEMP, COLOR); */
-/* p2c: test3.pas, line 160: Warning: Symbol 'DRAW' is not defined [221] */
+  /* p2c: test3.pas, line 160: Warning: Symbol 'DRAW' is not defined [221] */
   NOWX = tox(x);
   NOWY = temp;
 }
 
-
 /********************************************************************/
 
-static double 
+static double
 dot_prod(double *v1, double *v2)
 {
   /* PURPOSE : TO PERFORM THE DOT PRODUCT OF V1 AND V2 */
   return (v1[(long)X] * v2[(long)X] + v1[(long)Y] * v2[(long)Y] +
-	  v1[(long)Z] * v2[(long)Z]);
+          v1[(long)Z] * v2[(long)Z]);
 }
-
 
 /*******************************************************************/
 
-static void 
+static void
 cross_prod(double *v1, double *v2, double *result)
 {
   /* PURPOSE : TO PERFORM THE CROSS PROD WITH V1 AND V2 */
@@ -222,7 +215,6 @@ cross_prod(double *v1, double *v2, double *result)
   result[(long)Y] = v1[(long)Z] * v2[(long)X] - v1[(long)X] * v2[(long)Z];
   result[(long)Z] = v1[(long)X] * v2[(long)Y] - v1[(long)Y] * v2[(long)X];
 }
-
 
 /********************************************************************/
 
@@ -238,42 +230,40 @@ double *V1;
     V1[(long)INDEX] /= LENGTH;
 }
 
-
 /********************************************************************/
 
-Static Void MULTIPLY_MAT(A, B, C)
-double (*A)[4], (*B)[4], (*C)[4];
+Static Void MULTIPLY_MAT(A, B, C) double (*A)[4], (*B)[4], (*C)[4];
 {
   /* PURPOSE : TO MULTIPLY TWO 4X4 MATRIX'S WITH RESULT IN C */
   long I, J, K;
 
-  for (I = 0; I <= 3; I++) {
-    for (J = 0; J <= 3; J++) {
+  for (I = 0; I <= 3; I++)
+  {
+    for (J = 0; J <= 3; J++)
+    {
       C[I][J] = 0.0;
       for (K = 0; K <= 3; K++)
-	C[I][J] += A[I][K] * B[K][J];
+        C[I][J] += A[I][K] * B[K][J];
     }
   }
 }
 
-
 /********************************************************************/
 
-Static Void MULTIPLY_VEC(A, V1, V2)
-double (*A)[4];
+Static Void MULTIPLY_VEC(A, V1, V2) double (*A)[4];
 double *V1, *V2;
 {
   /* PURPOSE : TO MULTIPLY TWO VECTORS GIVING A POINT */
   XYZW I;
   long J;
 
-  for (I = X; (long)I <= (long)W; I = (XYZW)((long)I + 1)) {
+  for (I = X; (long)I <= (long)W; I = (XYZW)((long)I + 1))
+  {
     J = (int)I + 1;
     V2[(long)I] = V1[(long)X] * A[0][J - 1] + V1[(long)Y] * A[1][J - 1] +
-		  V1[(long)Z] * A[2][J - 1] + V1[(long)W] * A[3][J - 1];
+                  V1[(long)Z] * A[2][J - 1] + V1[(long)W] * A[3][J - 1];
   }
 }
-
 
 /********************************************************************/
 
@@ -285,7 +275,6 @@ double *V1, *V2, *RESULT;
   RESULT[(long)Y] = V1[(long)Y] - V2[(long)Y];
   RESULT[(long)Z] = V1[(long)Z] - V2[(long)Z];
 }
-
 
 /********************************************************************/
 
@@ -305,12 +294,10 @@ double *V;
   SUBTRACT_VEC(VUP, TEMPVECT, V);
 }
 
-
 /********************************************************************/
 
 Static Void FILL_MATRIX(A, A1, A2, A3, A4, B1, B2, B3, B4, C1, C2, C3, C4, D1,
-			D2, D3, D4)
-double (*A)[4];
+                        D2, D3, D4) double (*A)[4];
 double A1, A2, A3, A4, B1, B2, B3, B4, C1, C2, C3, C4, D1, D2, D3, D4;
 {
   /* PURPOSE : TO FILL A MATRIX WITH THE PROPER VALUES */
@@ -332,16 +319,14 @@ double A1, A2, A3, A4, B1, B2, B3, B4, C1, C2, C3, C4, D1, D2, D3, D4;
   A[3][3] = D4;
 }
 
-
 /********************************************************************/
 
 Static Void RESET_TRANS()
 {
   /* PURPOSE : TO INITIALIZE THE MATRIX BACK TO AN IDENTITY MATRIX */
   FILL_MATRIX(TRANSMATRIX, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0,
-	      1.0, 0.0, 0.0, 0.0, 0.0, 1.0);
+              1.0, 0.0, 0.0, 0.0, 0.0, 1.0);
 }
-
 
 /********************************************************************/
 
@@ -355,31 +340,30 @@ Static Void SETUP()
   GET_AXIS(V);
   cross_prod(VPN, V, U);
   FILL_MATRIX(T, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0,
-	      -(VRP[(long)X] + COP[(long)X]), -(VRP[(long)Y] + COP[(long)Y]),
-	      -(VRP[(long)Z] + COP[(long)Z]), 1.0);
+              -(VRP[(long)X] + COP[(long)X]), -(VRP[(long)Y] + COP[(long)Y]),
+              -(VRP[(long)Z] + COP[(long)Z]), 1.0);
   FILL_MATRIX(ROT, U[(long)X], V[(long)X], VPN[(long)X], 0.0, U[(long)Y],
-	      V[(long)Y], VPN[(long)Y], 0.0, U[(long)Z], V[(long)Z],
-	      VPN[(long)Z], 0.0, 0.0, 0.0, 0.0, 1.0);
+              V[(long)Y], VPN[(long)Y], 0.0, U[(long)Z], V[(long)Z],
+              VPN[(long)Z], 0.0, 0.0, 0.0, 0.0, 1.0);
   MULTIPLY_MAT(T, ROT, VIEWMATRIX);
   MULTIPLY_VEC(VIEWMATRIX, VRP, VRPPRIME);
   CENT[(long)Z] = VRPPRIME[(long)Z];
   CENT[(long)X] = VRPPRIME[(long)X] + (UMAX + UMIN) / 2;
   CENT[(long)Y] = VRPPRIME[(long)Y] + (VMAX + VMIN) / 2;
   FILL_MATRIX(SH, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0,
-	      -(CENT[(long)X] / CENT[(long)Z]),
-	      -(CENT[(long)Y] / CENT[(long)Z]), 1.0, 0.0, 0.0, 0.0, 0.0, 1.0);
+              -(CENT[(long)X] / CENT[(long)Z]),
+              -(CENT[(long)Y] / CENT[(long)Z]), 1.0, 0.0, 0.0, 0.0, 0.0, 1.0);
   MULTIPLY_MAT(VIEWMATRIX, SH, VIEWMATRIX);
   SZ = 1 / (VRPPRIME[(long)Z] + B);
   SX = 2 * VRPPRIME[(long)Z] * SZ / (UMAX - UMIN);
   SY = 2 * VRPPRIME[(long)Z] * SZ / (VMAX - VMIN);
   FILL_MATRIX(SC, SX, 0.0, 0.0, 0.0, 0.0, SY, 0.0, 0.0, 0.0, 0.0, SZ, 0.0,
-	      0.0, 0.0, 0.0, 1.0);
+              0.0, 0.0, 0.0, 1.0);
   MULTIPLY_MAT(VIEWMATRIX, SC, VIEWMATRIX);
   D = VRPPRIME[(long)Z] * SZ;
   window(-D, D, -D, D);
   MINDIST = (VRPPRIME[(long)Z] + F) * SZ;
 }
-
 
 /********************************************************************/
 
@@ -391,24 +375,26 @@ DIRECTION *ENDPOINT;
   *ENDPOINT = 0;
   if (P[(long)X] < -P[(long)Z] - 0.001)
     *ENDPOINT = 1L << ((long)LEFT);
-  else {
+  else
+  {
     if (P[(long)X] > P[(long)Z] + 0.001)
       *ENDPOINT = 1L << ((long)RIGHT);
   }
   if (P[(long)Y] < -P[(long)Z] - 0.001)
     *ENDPOINT |= 1L << ((long)BOTTOM);
-  else {
+  else
+  {
     if (P[(long)Y] > P[(long)Z] + 0.001)
       *ENDPOINT |= 1L << ((long)TOP);
   }
   if (P[(long)Z] < MINDIST - 0.001)
     *ENDPOINT |= 1L << ((long)FRONT);
-  else {
+  else
+  {
     if (P[(long)Z] > 1.001)
       *ENDPOINT |= 1L << ((long)BACK);
   }
 }
-
 
 /********************************************************************/
 
@@ -420,7 +406,6 @@ double T;
   P[(long)Y] = (P2[(long)Y] - P1[(long)Y]) * T + P1[(long)Y];
   P[(long)Z] = (P2[(long)Z] - P1[(long)Z]) * T + P1[(long)Z];
 }
-
 
 /********************************************************************/
 
@@ -434,7 +419,6 @@ double *P;
   GET_P(P, T);
 }
 
-
 /********************************************************************/
 
 Static Void CLIP_RIGHT(P)
@@ -446,7 +430,6 @@ double *P;
       (P2[(long)X] - P1[(long)X] + P1[(long)Z] - P2[(long)Z]);
   GET_P(P, T);
 }
-
 
 /********************************************************************/
 
@@ -460,7 +443,6 @@ double *P;
   GET_P(P, T);
 }
 
-
 /********************************************************************/
 
 Static Void CLIP_BOTTOM(P)
@@ -473,7 +455,6 @@ double *P;
   GET_P(P, T);
 }
 
-
 /********************************************************************/
 
 Static Void CLIP_BACK(P)
@@ -484,7 +465,6 @@ double *P;
   T = (1 - P1[(long)Z]) / (P2[(long)Z] - P1[(long)Z]);
   GET_P(P, T);
 }
-
 
 /********************************************************************/
 
@@ -497,7 +477,6 @@ double *P;
   GET_P(P, T);
 }
 
-
 /********************************************************************/
 
 Static Void MAKE(P, OLDP)
@@ -508,7 +487,6 @@ double *P, *OLDP;
   P[(long)Z] = OLDP[(long)Z];
   P[(long)W] = 1.0;
 }
-
 
 /********************************************************************/
 
@@ -527,46 +505,59 @@ double *P1_, *P2_;
   INVISIBLE = false;
   REGION(P1, &DIR1);
   REGION(P2, &DIR2);
-  while (DIR1 != 0 || DIR2 != 0) {
-    if ((DIR1 & DIR2) != 0) {
+  while (DIR1 != 0 || DIR2 != 0)
+  {
+    if ((DIR1 & DIR2) != 0)
+    {
       DIR1 = 0;
       DIR2 = 0;
       INVISIBLE = true;
       continue;
     }
-    if (DIR1 == 0) {
+    if (DIR1 == 0)
+    {
       DIR = DIR2;
       MAKE(P, P2);
-    } else {
+    }
+    else
+    {
       DIR = DIR1;
       MAKE(P, P1);
     }
     if (((1L << ((long)LEFT)) & DIR) != 0)
       CLIP_LEFT(P);
-    else {
+    else
+    {
       if (((1L << ((long)RIGHT)) & DIR) != 0)
-	CLIP_RIGHT(P);
-      else {
-	if (((1L << ((long)TOP)) & DIR) != 0)
-	  CLIP_TOP(P);
-	else {
-	  if (((1L << ((long)BOTTOM)) & DIR) != 0)
-	    CLIP_BOTTOM(P);
-	  else {
-	    if (((1L << ((long)BACK)) & DIR) != 0)
-	      CLIP_BACK(P);
-	    else {
-	      if (((1L << ((long)FRONT)) & DIR) != 0)
-		CLIP_FRONT(P);
-	    }
-	  }
-	}
+        CLIP_RIGHT(P);
+      else
+      {
+        if (((1L << ((long)TOP)) & DIR) != 0)
+          CLIP_TOP(P);
+        else
+        {
+          if (((1L << ((long)BOTTOM)) & DIR) != 0)
+            CLIP_BOTTOM(P);
+          else
+          {
+            if (((1L << ((long)BACK)) & DIR) != 0)
+              CLIP_BACK(P);
+            else
+            {
+              if (((1L << ((long)FRONT)) & DIR) != 0)
+                CLIP_FRONT(P);
+            }
+          }
+        }
       }
     }
-    if (DIR == DIR1) {
+    if (DIR == DIR1)
+    {
       MAKE(P1, P);
       REGION(P1, &DIR1);
-    } else {
+    }
+    else
+    {
       MAKE(P2, P);
       REGION(P2, &DIR2);
     }
@@ -580,7 +571,6 @@ double *P1_, *P2_;
   YP = D * P2[(long)Y] / P2[(long)Z];
   draws(XP, YP);
 }
-
 
 /****************************************************************************/
 /* procedure : update                                                       */
@@ -602,37 +592,44 @@ double (*RM)[2];
 
   MORERL = *NRL;
   FORLIM = *NRL;
-  for (K = 0; K < FORLIM; K++) {
+  for (K = 0; K < FORLIM; K++)
+  {
     R1 = RM[K][0];
     R2 = RM[K][1];
-    if (R1 <= RMAX && R2 >= RMIN) {
+    if (R1 <= RMAX && R2 >= RMIN)
+    {
       if (R1 >= RMIN && R2 <= RMAX)
-	RM[K][0] = -1.0;
-      else {
-	if (R1 < RMIN && R2 > RMAX) {
-	  MORERL++;
-	  RM[MORERL - 1][0] = RMAX;
-	  RM[MORERL - 1][1] = R2;
-	  RM[K][1] = RMIN;
-	} else {
-	  if (R1 < RMIN)
-	    RM[K][1] = RMIN;
-	  else
-	    RM[K][0] = RMAX;
-	}
+        RM[K][0] = -1.0;
+      else
+      {
+        if (R1 < RMIN && R2 > RMAX)
+        {
+          MORERL++;
+          RM[MORERL - 1][0] = RMAX;
+          RM[MORERL - 1][1] = R2;
+          RM[K][1] = RMIN;
+        }
+        else
+        {
+          if (R1 < RMIN)
+            RM[K][1] = RMIN;
+          else
+            RM[K][0] = RMAX;
+        }
       }
     }
-  }  /* FOR */
+  } /* FOR */
   *NRL = 0;
-  for (K = 0; K < MORERL; K++) {
-    if (RM[K][0] >= -KLUDGE) {
+  for (K = 0; K < MORERL; K++)
+  {
+    if (RM[K][0] >= -KLUDGE)
+    {
       (*NRL)++;
       RM[*NRL - 1][0] = RM[K][0];
       RM[*NRL - 1][1] = RM[K][1];
     }
   }
 }
-
 
 /****************************************************************************/
 /* function : eval                                                          */
@@ -645,14 +642,14 @@ double VAL;
 {
   if (VAL > KLUDGE)
     return 1;
-  else {
+  else
+  {
     if (VAL < -KLUDGE)
       return -1;
     else
       return 0;
   }
 }
-
 
 /***************************************************************************/
 /* function : G (what a pnemonic name)                                     */
@@ -669,7 +666,6 @@ double XX, YY, X4, Y4, XD, YD;
   VAL = (YY - Y4) * YD + (XX - X4) * XD;
   return (EVAL(VAL));
 }
-
 
 /****************************************************************************/
 /* function : visible                                                       */
@@ -690,25 +686,25 @@ double X1, Y1, X2, Y2, RMIN, RMAX;
   uchar I1, I2, V1, V2, V3;
   POINT P, P1, P3;
 
-
   Result = true;
   RMID = (RMAX + RMIN) * 0.5;
   RXX = 1.0 - RMID;
   XMID = RXX * X1 + RMID * X2;
   YMID = RXX * Y1 + RMID * Y2;
   DENOM = D * (OBJ.POINTS[L2 - 1][(long)X] - OBJ.POINTS[L1 - 1][(long)X]) -
-	  XMID * (OBJ.POINTS[L2 - 1][(long)Z] - OBJ.POINTS[L1 - 1][(long)Z]);
+          XMID * (OBJ.POINTS[L2 - 1][(long)Z] - OBJ.POINTS[L1 - 1][(long)Z]);
   if (fabs(DENOM) > KLUDGE)
     PHI = (XMID * OBJ.POINTS[L1 - 1][(long)Z] - D * OBJ.POINTS[L1 - 1]
-						[(long)X]) / DENOM;
-  else {
+                                                              [(long)X]) /
+          DENOM;
+  else
+  {
     DENOM = D * (OBJ.POINTS[L2 - 1][(long)Y] - OBJ.POINTS[L1 - 1][(long)Y]) -
-	    YMID * (OBJ.POINTS[L2 - 1][(long)Z] - OBJ.POINTS[L1 - 1][(long)Z]);
-    PHI = YMID * OBJ.POINTS[L1 - 1][(long)Z] - D * OBJ.POINTS[L1 - 1]
-					       [(long)Y] / DENOM;
-  }  /* ELSE */
+            YMID * (OBJ.POINTS[L2 - 1][(long)Z] - OBJ.POINTS[L1 - 1][(long)Z]);
+    PHI = YMID * OBJ.POINTS[L1 - 1][(long)Z] - D * OBJ.POINTS[L1 - 1][(long)Y] / DENOM;
+  } /* ELSE */
   ZHAT = (1.0 - PHI) * OBJ.POINTS[L1 - 1][(long)Z] + PHI * OBJ.POINTS[L2 - 1]
-						     [(long)Z];
+                                                                     [(long)Z];
 
   DDD = ZHAT / D;
   XHAT = XMID * DDD;
@@ -724,21 +720,18 @@ double X1, Y1, X2, Y2, RMIN, RMAX;
   SUBTRACT_VEC(OBJ.POINTS[V2 - 1], OBJ.POINTS[V1 - 1], P1);
   SUBTRACT_VEC(OBJ.POINTS[V2 - 1], OBJ.POINTS[V3 - 1], P3);
   cross_prod(P1, P3, P);
-  D1 = P[(long)X] * OBJ.POINTS[V2 - 1][(long)X] + P[(long)Y] * OBJ.POINTS[V2 - 1]
-	 [(long)Y] + P[(long)Z] * OBJ.POINTS[V2 - 1][(long)Z];
+  D1 = P[(long)X] * OBJ.POINTS[V2 - 1][(long)X] + P[(long)Y] * OBJ.POINTS[V2 - 1][(long)Y] + P[(long)Z] * OBJ.POINTS[V2 - 1][(long)Z];
   F1 = P[(long)X] * XHAT + P[(long)Y] * YHAT + P[(long)Z] * ZHAT - D1;
   F2 = -D1;
   if (fabs(F1) < KLUDGE)
     Result = false;
   else
     fprintf(NIB, "eval is %12ld\n", labs(EVAL(F1) - EVAL(F2)));
-  if (labs(EVAL(F1) - EVAL(F2)) >= 2)   /* WITH */
+  if (labs(EVAL(F1) - EVAL(F2)) >= 2) /* WITH */
     return false;
-
 
   return Result;
 }
-
 
 /****************************************************************************/
 /* function : intersects                                                    */
@@ -762,7 +755,8 @@ double X1, Y1, XD, YD, INS, *RMIN, *RMAX;
   *RMAX = 0.0;
   *RMIN = 1.0;
   K = 1;
-  while (K <= INS && ANS) {
+  while (K <= INS && ANS)
+  {
     NN = OBJ.LINF[J - 1][K - 1];
     V1 = OBJ.LINV[NN - 1][0];
     V2 = OBJ.LINV[NN - 1][1];
@@ -771,30 +765,38 @@ double X1, Y1, XD, YD, INS, *RMIN, *RMAX;
     XF = OBJ.XP[V1 - 1] - X1;
     YF = OBJ.YP[V1 - 1] - Y1;
     DISK = XD * YE - XE * YD;
-    if (fabs(DISK) > KLUDGE) {   /* THE LINES DO NOT OVERLAP */
-      XSI = (XD * YF - YD * XF) / DISK;   /* XSI ON FACET EDGE */
-      if (XSI > -KLUDGE && XSI < 1 + KLUDGE) {
-	MU = (YE * XF - XE * YF) / DISK;   /* MU OF SEARCH LINE */
-	if (*RMAX < MU)
-	  *RMAX = MU;
-	if (*RMIN > MU)
-	  *RMIN = MU;
+    if (fabs(DISK) > KLUDGE)
+    {                                   /* THE LINES DO NOT OVERLAP */
+      XSI = (XD * YF - YD * XF) / DISK; /* XSI ON FACET EDGE */
+      if (XSI > -KLUDGE && XSI < 1 + KLUDGE)
+      {
+        MU = (YE * XF - XE * YF) / DISK; /* MU OF SEARCH LINE */
+        if (*RMAX < MU)
+          *RMAX = MU;
+        if (*RMIN > MU)
+          *RMIN = MU;
       }
-    } else {
-      if (fabs(XD) > KLUDGE) {
-	XSI = XF / XD;
-	if (fabs(YF - XSI * YD) < KLUDGE)
-	  ANS = false;
-      } else {
-	if (fabs(XF) < KLUDGE)
-	  ANS = false;
+    }
+    else
+    {
+      if (fabs(XD) > KLUDGE)
+      {
+        XSI = XF / XD;
+        if (fabs(YF - XSI * YD) < KLUDGE)
+          ANS = false;
       }
-    }  /* ELSE */
+      else
+      {
+        if (fabs(XF) < KLUDGE)
+          ANS = false;
+      }
+    } /* ELSE */
     K++;
-  }  /* WHILE */
+  } /* WHILE */
 
   /*zzz*/
-  if (*RMIN > 1 + KLUDGE || *RMAX < KLUDGE) {
+  if (*RMIN > 1 + KLUDGE || *RMAX < KLUDGE)
+  {
     ANS = false;
     return ANS;
   }
@@ -804,11 +806,10 @@ double X1, Y1, XD, YD, INS, *RMIN, *RMAX;
     *RMIN = 0.0;
   if (*RMAX - *RMIN < KLUDGE)
     ANS = false;
-  return ANS;   /* WITH */
+  return ANS; /* WITH */
 
   /* ELSE */
 }
-
 
 /****************************************************************************/
 /* function : off_end                                                       */
@@ -829,28 +830,29 @@ double X3, Y3, X4, Y4, XD, YD;
 
   INSEG = false;
   GVAL = G(X3, Y3, X4, Y4, XD, YD);
-  if (GVAL == 0) {
+  if (GVAL == 0)
+  {
     INSEG = true;
     return (!INSEG);
-  }  /* IF */
+  } /* IF */
   K = 1;
-  while (K <= INS && !INSEG) {
+  while (K <= INS && !INSEG)
+  {
     NN = OBJ.LINF[J - 1][K - 1];
     VERTEX = OBJ.LINV[NN - 1][0];
     if (labs(GVAL - G(OBJ.XP[VERTEX - 1], OBJ.YP[VERTEX - 1], X4, Y4, XD, YD)) < 2)
       INSEG = true;
-    else {
+    else
+    {
       VERTEX = OBJ.LINV[NN - 1][1];
       if (labs(GVAL - G(OBJ.XP[VERTEX - 1], OBJ.YP[VERTEX - 1], X4, Y4, XD,
-			YD)) < 2)
-	INSEG = true;
+                        YD)) < 2)
+        INSEG = true;
     }
     K++;
-  }  /* WHILE */
-  return (!INSEG);   /* WITH */
-
+  }                /* WHILE */
+  return (!INSEG); /* WITH */
 }
-
 
 /****************************************************************************/
 /* function : fit                                                           */
@@ -867,7 +869,6 @@ double XX, YY, X1, Y1, XD, YD;
   VAL = (YY - Y1) * XD - (XX - X1) * YD;
   return (EVAL(VAL));
 }
-
 
 /****************************************************************************/
 /* function : diff sides                                                    */
@@ -891,26 +892,28 @@ double X1, Y1, XD, YD;
   NN = OBJ.LINF[J - 1][0];
   VERTEX = OBJ.LINV[NN - 1][0];
   FVAL = FIT(OBJ.XP[VERTEX - 1], OBJ.YP[VERTEX - 1], X1, Y1, XD, YD);
-  if (FVAL == 0) {
+  if (FVAL == 0)
+  {
     SAME_SIDE = false;
     return (!SAME_SIDE);
-  }  /* IF */
+  } /* IF */
   K = 2;
-  while (K <= INS && SAME_SIDE) {
+  while (K <= INS && SAME_SIDE)
+  {
     NN = OBJ.LINF[J - 1][K - 1];
     VERTEX = OBJ.LINV[NN - 1][0];
     if (FVAL != FIT(OBJ.XP[VERTEX - 1], OBJ.YP[VERTEX - 1], X1, Y1, XD, YD))
       SAME_SIDE = false;
-    else {
+    else
+    {
       VERTEX = OBJ.LINV[NN - 1][1];
       if (FVAL != FIT(OBJ.XP[VERTEX - 1], OBJ.YP[VERTEX - 1], X1, Y1, XD, YD))
-	SAME_SIDE = false;
+        SAME_SIDE = false;
     }
     K++;
-  }  /* WHILE */
-  return (!SAME_SIDE);   /* WITH */
+  }                    /* WHILE */
+  return (!SAME_SIDE); /* WITH */
 }
-
 
 /****************************************************************************/
 /* function : in facet                                                      */
@@ -928,14 +931,14 @@ uchar INS, I, J;
 
   K = 1;
   IN_IT = false;
-  while (K <= INS && !IN_IT) {
+  while (K <= INS && !IN_IT)
+  {
     if (OBJ.LINF[J - 1][K - 1] == I)
       IN_IT = true;
     K++;
   }
-  return IN_IT;   /* WITH */
+  return IN_IT; /* WITH */
 }
-
 
 /*****************************************************************************/
 /* procedure : findsegs                                                      */
@@ -953,7 +956,7 @@ double (*RM)[2];
   double RMIN, RMAX;
 
   INS = OBJ.INDEXF[J - 1];
-  if (IN_FACET(INS, I, J))   /* WITH */
+  if (IN_FACET(INS, I, J)) /* WITH */
     return;
   if (!DIFF_SIDE(J, INS, X1, Y1, XD, YD))
     return;
@@ -961,12 +964,12 @@ double (*RM)[2];
     return;
   if (OFF_END(J, INS, X1, Y1, X2, Y2, XD, YD))
     return;
-  if (INTERSECTS(J, X1, Y1, XD, YD, (double)INS, &RMIN, &RMAX)) {
+  if (INTERSECTS(J, X1, Y1, XD, YD, (double)INS, &RMIN, &RMAX))
+  {
     if (VISIBLE(J, L1, L2, X1, Y1, X2, Y2, RMIN, RMAX))
       UPDATE(RMIN, RMAX, NRL, RM);
   }
 }
-
 
 /****************************************************************************/
 /* procedure : draw segs                                                    */
@@ -974,9 +977,9 @@ double (*RM)[2];
 /*             Mus in the RM array.                                         */
 /****************************************************************************/
 
-static void 
-draw_segs(X1, Y1, X2, Y2, MU1, MU2)
-double X1, Y1, X2, Y2, MU1, MU2;
+static void
+    draw_segs(X1, Y1, X2, Y2, MU1, MU2) double X1,
+    Y1, X2, Y2, MU1, MU2;
 {
   double XP1, YP1, XP2, YP2, ONE_MU1, ONE_MU2;
 
@@ -986,19 +989,19 @@ double X1, Y1, X2, Y2, MU1, MU2;
   YP1 = Y1 * ONE_MU1 + Y2 * MU1;
   XP2 = X1 * ONE_MU2 + X2 * MU2;
   YP2 = Y1 * ONE_MU2 + Y2 * MU2;
-  if (fabs(XP1 - XP2) > KLUDGE || fabs(YP1 - YP2) > KLUDGE) {
+  if (fabs(XP1 - XP2) > KLUDGE || fabs(YP1 - YP2) > KLUDGE)
+  {
     moves(XP1, YP1);
     draws(XP2, YP2);
   }
 }
-
 
 /****************************************************************************/
 /* procedure : hidden                                                       */
 /* purpose   : This is the main routine of the hidden lines thing.          */
 /****************************************************************************/
 
-static void 
+static void
 hidden()
 {
   uchar I, J, NRL, L1, L2;
@@ -1006,7 +1009,8 @@ hidden()
   uchar FORLIM;
 
   FORLIM = OBJ.NOL;
-  for (I = 1; I <= FORLIM; I++) {   /* WITH */
+  for (I = 1; I <= FORLIM; I++)
+  { /* WITH */
     L1 = OBJ.LINV[I - 1][0];
     L2 = OBJ.LINV[I - 1][1];
     NRL = 1;
@@ -1019,7 +1023,8 @@ hidden()
     XD = X2 - X1;
     YD = Y2 - Y1;
     J = 1;
-    while (J <= OBJ.NOF && NRL != 0) {
+    while (J <= OBJ.NOF && NRL != 0)
+    {
       FIND_SEGS(I, J, L1, L2, X1, Y1, X2, Y2, XD, YD, &NRL, RM);
       J++;
     }
@@ -1027,7 +1032,6 @@ hidden()
       draw_segs(X1, Y1, X2, Y2, RM[J][0], RM[J][1]);
   }
 }
-
 
 /****************************************************************************/
 
@@ -1059,10 +1063,9 @@ Static Void GET_VIEW()
   SETUP();
 }
 
-
 /********************************************************************/
 
-static void 
+static void
 move3(double x1, double y1, double z1)
 {
   /* PURPOSE : MOVES TO A THREE DIMENSIONAL COORD WITHOUT DRAWWINF */
@@ -1075,10 +1078,9 @@ move3(double x1, double y1, double z1)
   MULTIPLY_VEC(THEMATRIX, p3, P1);
 }
 
-
 /********************************************************************/
 
-static void 
+static void
 draw3(double x2, double y2, double z2)
 {
   /* PURPOSE : DRAWS FROM THE CURRENT POINT TO X2,Y2,Z2 AND MAKES */
@@ -1094,7 +1096,6 @@ draw3(double x2, double y2, double z2)
   MAKE(P1, P2);
 }
 
-
 /********************************************************************/
 
 Static Void READY_DRAW()
@@ -1102,7 +1103,6 @@ Static Void READY_DRAW()
   /* PURPOSE : TO PREPARE THE MATRIX WITH THE VIEW MATRIX */
   MULTIPLY_MAT(TRANSMATRIX, VIEWMATRIX, THEMATRIX);
 }
-
 
 /********************************************************************/
 
@@ -1112,10 +1112,9 @@ double TX, TY, TZ;
   MATRIX T;
 
   FILL_MATRIX(T, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0,
-	      -TX, -TY, -TZ, 1.0);
+              -TX, -TY, -TZ, 1.0);
   MULTIPLY_MAT(TRANSMATRIX, T, TRANSMATRIX);
 }
-
 
 /********************************************************************/
 
@@ -1125,14 +1124,13 @@ double SX, SY, SZ;
   MATRIX S;
 
   FILL_MATRIX(S, SX, 0.0, 0.0, 0.0, 0.0, SY, 0.0, 0.0, 0.0, 0.0, SZ, 0.0, 0.0,
-	      0.0, 0.0, 1.0);
+              0.0, 0.0, 1.0);
   MULTIPLY_MAT(TRANSMATRIX, S, TRANSMATRIX);
 }
 
-
 /********************************************************************/
 
-static void 
+static void
 rotate_x(double theta)
 {
   MATRIX R;
@@ -1141,14 +1139,13 @@ rotate_x(double theta)
   SINT = sin(theta);
   COST = cos(theta);
   FILL_MATRIX(R, 1.0, 0.0, 0.0, 0.0, 0.0, COST, SINT, 0.0, 0.0, -SINT, COST,
-	      0.0, 0.0, 0.0, 0.0, 1.0);
+              0.0, 0.0, 0.0, 0.0, 1.0);
   MULTIPLY_MAT(TRANSMATRIX, R, TRANSMATRIX);
 }
 
-
 /********************************************************************/
 
-static void 
+static void
 rotate_y(double theta)
 {
   MATRIX R;
@@ -1157,14 +1154,13 @@ rotate_y(double theta)
   SINT = sin(theta);
   COST = cos(theta);
   FILL_MATRIX(R, COST, 0.0, -SINT, 0.0, 0.0, 1.0, 0.0, 0.0, SINT, 0.0, COST,
-	      0.0, 0.0, 0.0, 0.0, 1.0);
+              0.0, 0.0, 0.0, 0.0, 1.0);
   MULTIPLY_MAT(TRANSMATRIX, R, TRANSMATRIX);
 }
 
-
 /********************************************************************/
 
-static void 
+static void
 rotate_z(theta)
 {
   MATRIX R;
@@ -1173,56 +1169,51 @@ rotate_z(theta)
   SINT = sin(theta);
   COST = cos(theta);
   FILL_MATRIX(R, COST, SINT, 0.0, 0.0, -SINT, COST, 0.0, 0.0, 0.0, 0.0, 1.0,
-	      0.0, 0.0, 0.0, 0.0, 1.0);
+              0.0, 0.0, 0.0, 0.0, 1.0);
   MULTIPLY_MAT(TRANSMATRIX, R, TRANSMATRIX);
 }
-
 
 /********************************************************************/
 
 Static Void CUBE()
 {
   static double XX[8] = {
-    4.0, 4.0, -4.0, -4.0, 4.0, 4.0, -4.0, -4.0
-  };
+      4.0, 4.0, -4.0, -4.0, 4.0, 4.0, -4.0, -4.0};
 
   static double YY[8] = {
-    4.0, -4.0, -4.0, 4.0, 4.0, -4.0, -4.0, 4.0
-  };
+      4.0, -4.0, -4.0, 4.0, 4.0, -4.0, -4.0, 4.0};
 
   static double ZZ[8] = {
-    4.0, 4.0, 4.0, 4.0, -4.0, -4.0, -4.0, -4.0
-  };
+      4.0, 4.0, 4.0, 4.0, -4.0, -4.0, -4.0, -4.0};
 
   static uchar LV[12][2] = {
-    { 1, 2 },
-    { 2, 3 },
-    { 3, 4 },
-    { 4, 1 },
-    { 5, 6 },
-    { 6, 7 },
-    { 7, 8 },
-    { 8, 5 },
-    { 1, 5 },
-    { 2, 6 },
-    { 4, 8 },
-    { 3, 7 }
-  };
+      {1, 2},
+      {2, 3},
+      {3, 4},
+      {4, 1},
+      {5, 6},
+      {6, 7},
+      {7, 8},
+      {8, 5},
+      {1, 5},
+      {2, 6},
+      {4, 8},
+      {3, 7}};
 
   static uchar LF[6][4] = {
-    { 1, 2, 3, 4 },
-    { 1, 10, 5, 9 },
-    { 5, 6, 7, 8 },
-    { 7, 12, 3, 11 },
-    { 4, 9, 8, 11 },
-    { 2, 10, 6, 12 }
-  };
+      {1, 2, 3, 4},
+      {1, 10, 5, 9},
+      {5, 6, 7, 8},
+      {7, 12, 3, 11},
+      {4, 9, 8, 11},
+      {2, 10, 6, 12}};
 
   uchar I, J, INOV, INOL, INOF;
   POINT P;
   double DD;
 
-  for (I = 1; I <= 8; I++) {
+  for (I = 1; I <= 8; I++)
+  {
     INOV = I + OBJ.NOV;
     P[(long)X] = XX[I - 1];
     P[(long)Y] = YY[I - 1];
@@ -1233,26 +1224,27 @@ Static Void CUBE()
     OBJ.XP[INOV - 1] = OBJ.POINTS[INOV - 1][(long)X] * DD;
     OBJ.YP[INOV - 1] = OBJ.POINTS[INOV - 1][(long)Y] * DD;
   }
-  for (I = 1; I <= 12; I++) {
+  for (I = 1; I <= 12; I++)
+  {
     INOL = I + OBJ.NOL;
     OBJ.LINV[INOL - 1][0] = LV[I - 1][0] + OBJ.NOV;
     OBJ.LINV[INOL - 1][1] = LV[I - 1][1] + OBJ.NOV;
   }
-  for (I = 1; I <= 6; I++) {
+  for (I = 1; I <= 6; I++)
+  {
     INOF = I + OBJ.NOF;
-    OBJ.INDEXF[INOF - 1] = 4;   /* NUMBER OF SIDES/FACETS */
+    OBJ.INDEXF[INOF - 1] = 4; /* NUMBER OF SIDES/FACETS */
     for (J = 0; J <= 3; J++)
       OBJ.LINF[INOF - 1][J] = LF[I - 1][J] + OBJ.NOL;
   }
   OBJ.NOV += 8;
   OBJ.NOL += 12;
-  OBJ.NOF += 6;   /* WITH */
+  OBJ.NOF += 6; /* WITH */
 }
-
 
 /********************************************************************/
 
-static void 
+static void
 pyramid(double x)
 {
   /* THE FIXED POINT IS THE LOWER LEFT FRONT OF THE OBJECT */
@@ -1270,7 +1262,6 @@ pyramid(double x)
   draw3(x, y, -x);
   draw3(y, 0.0, -y);
 }
-
 
 /********************************************************************/
 
@@ -1291,11 +1282,9 @@ Static Void SETDRAW()
   CUBE();
 }
 
-
 /***************    MAIN  PROGRAM   *********************************/
 
-main(argc, argv)
-int argc;
+main(argc, argv) int argc;
 Char *argv[];
 {
   /*PASCAL_MAIN(argc, argv);*/
@@ -1305,8 +1294,8 @@ Char *argv[];
   GET_VIEW();
   initialize();
   /*  GRAPHCOLORMODE(); */
-/* p2c: test3.pas, line 1112:
- * Warning: Symbol 'GRAPHCOLORMODE' is not defined [221] */
+  /* p2c: test3.pas, line 1112:
+   * Warning: Symbol 'GRAPHCOLORMODE' is not defined [221] */
   SETUP();
   SETDRAW();
   hidden();
@@ -1315,7 +1304,5 @@ Char *argv[];
     fclose(NIB);
   exit(EXIT_SUCCESS);
 }
-
-
 
 /* End. */
